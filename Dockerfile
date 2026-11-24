@@ -1,18 +1,13 @@
-FROM public-cn-beijing.cr.volces.com/public/base:maven-3.6.0-jdk-8-slim as build
+# 抖音云容器服务：直接运行已编译好的 Spring Boot jar
+# 基础镜像沿用抖音云官方提供的 JDK8 镜像（ guaranteed 可拉取）
+FROM public-cn-beijing.cr.volces.com/public/base:maven-3.6.0-jdk-8-slim
 
-# 指定构建过程中的工作目录
 WORKDIR /opt/application
-# 将当前目录（dockerfile所在目录）下所有文件都拷贝到工作目录下（.dockerignore中文件除外）
-COPY . .
+COPY candyracing-server-0.1.0.jar /opt/application/app.jar
+COPY run.sh /opt/application/run.sh
+RUN chmod +x /opt/application/run.sh
 
-# 拉取公网依赖较慢，容易失败，建议在settings.xml中更换依赖源
-RUN mvn -s /opt/application/settings.xml -f /opt/application/pom.xml clean package
-
-# 将构建产物jar包拷贝到运行时目录中
-RUN chmod -R 777 /opt/application/run.sh
-
+# 与服务端 application.yml / 平台回调配置保持一致
 EXPOSE 8000
 
-CMD ["sh","/opt/application/run.sh"]
-
-
+CMD ["sh", "/opt/application/run.sh"]
